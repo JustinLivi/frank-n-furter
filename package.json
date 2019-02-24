@@ -17,7 +17,8 @@
     "generator",
     "project",
     "package",
-    "module"
+    "module",
+    "scaffolding"
   ],
   "author": "Justin Livi",
   "license": "MIT",
@@ -30,6 +31,7 @@
     "@types/fs-extra": "^5.0.5",
     "@types/inquirer": "0.0.43",
     "@types/lodash": "^4.14.121",
+    "aigle": "^1.13.0-alpha.12",
     "commander": "^2.19.0",
     "fs-extra": "^7.0.1",
     "inquirer": "^6.2.2",

@@ -1,7 +1,21 @@
 import { Questions } from 'inquirer';
 
 export type GeneratorFunction<Answers, Result> = (
-  answers: Answers
+  answers: Answers,
+  template: Template<Answers>
+) => Result | Promise<Result>;
+
+export type PreHook<Answers, Result> = (
+  itemName: string,
+  answers: Answers,
+  template: Template<Answers>
+) => Result | Promise<Result>;
+
+export type PostPluginHook<Answers, Result> = (
+  itemName: string,
+  pluginOutput: Result,
+  answers: Answers,
+  template: Template<Answers>
 ) => Result | Promise<Result>;
 
 export type ConfigOption<Answers, Result> =
@@ -10,7 +24,7 @@ export type ConfigOption<Answers, Result> =
 
 export type ArrayConfig<Answers, Type> =
   | ConfigOption<Answers, Type[]>
-  | ConfigOption<Answers, Type>[];
+  | Array<ConfigOption<Answers, Type>>;
 export type StringConfig<Answers> = ConfigOption<Answers, string>;
 export type StringArrayConfig<Answers> = ArrayConfig<Answers, string>;
 
@@ -23,102 +37,6 @@ export type MapConfig<Answers> = ConfigOption<
   Answers,
   ArrayConfig<Answers, MapItemConfig<Answers>>
 >;
-
-export interface NpmBugsObjectConfig<Answers> {
-  url?: StringConfig<Answers>;
-  email?: StringConfig<Answers>;
-}
-
-export type NpmBugsConfig<Answers> = ConfigOption<
-  Answers,
-  NpmBugsObjectConfig<Answers> | StringConfig<Answers>
->;
-
-export interface NpmPersonObjectConfig<Answers> {
-  name: StringConfig<Answers>;
-  email?: StringConfig<Answers>;
-  url?: StringConfig<Answers>;
-}
-
-export type NpmPersonConfig<Answers> = ConfigOption<
-  Answers,
-  NpmPersonObjectConfig<Answers> | StringConfig<Answers>
->;
-
-export type NpmContributorsConfig<Answers> = ArrayConfig<
-  Answers,
-  NpmPersonConfig<Answers>
->;
-
-export type NpmManConfig<Answers> = ConfigOption<
-  Answers,
-  StringArrayConfig<Answers> | StringConfig<Answers>
->;
-
-export interface NpmDirectoriesObjectConfig<Answers> {
-  lib?: StringConfig<Answers>;
-  bin?: StringConfig<Answers>;
-  man?: StringConfig<Answers>;
-  doc?: StringConfig<Answers>;
-  example?: StringConfig<Answers>;
-  test?: StringConfig<Answers>;
-}
-
-export type NpmDirectoriesConfig<Answers> = ConfigOption<
-  Answers,
-  NpmDirectoriesObjectConfig<Answers>
->;
-
-export interface NpmRepositoryObjectConfig<Answers> {
-  type: StringConfig<Answers>;
-  url: StringConfig<Answers>;
-  directory?: StringConfig<Answers>;
-}
-
-export type NpmObjectConfig<Answers> = ConfigOption<
-  Answers,
-  NpmRepositoryObjectConfig<Answers> | StringConfig<Answers>
->;
-
-export interface NpmPackageConfig<Answers> {
-  name?: StringConfig<Answers>;
-  version?: StringConfig<Answers>;
-  description?: StringConfig<Answers>;
-  keywords?: StringArrayConfig<Answers>;
-  homepage?: StringConfig<Answers>;
-  bugs?: NpmBugsConfig<Answers>;
-  license?: StringConfig<Answers>;
-  author?: NpmPersonConfig<Answers>;
-  contributors?: NpmContributorsConfig<Answers>;
-  files?: StringArrayConfig<Answers>;
-  main?: StringConfig<Answers>;
-  browser?: StringConfig<Answers>;
-  bin?: MapConfig<Answers>;
-  man?: NpmManConfig<Answers>;
-  directories?: NpmDirectoriesConfig<Answers>;
-  repository?: NpmRepositoryObjectConfig<Answers>;
-  config?: MapConfig<Answers>;
-  /**
-   * npm scripts to add
-   */
-  scripts?: MapConfig<Answers>;
-  /**
-   * npm dependencies to install
-   */
-  dependencies?: StringArrayConfig<Answers>;
-  /**
-   * npm devDependencies to install
-   */
-  devDependencies?: StringArrayConfig<Answers>;
-  peerdependencies?: StringArrayConfig<Answers>;
-  bundledDependencies?: StringArrayConfig<Answers>;
-  optionalDependencies?: StringArrayConfig<Answers>;
-  engines?: MapConfig<Answers>;
-  os?: StringArrayConfig<Answers>;
-  cpu?: StringArrayConfig<Answers>;
-  private?: ConfigOption<Answers, boolean>;
-  publishConfig?: MapConfig<Answers>;
-}
 
 /**
  * A file configuration
@@ -135,11 +53,54 @@ export interface FileConfig<Answers> {
 }
 
 export interface LifecycleHooksConfig<Answers> {
-  preprocess: (template: Template<Answers>) => Template<Answers>;
-  postquestions: GeneratorFunction<Answers, Answers>;
-  prepackage: GeneratorFunction<Answers, void>;
-  prefiles: GeneratorFunction<Answers, void>;
-  postgeneration: GeneratorFunction<Answers, void>;
+  /**
+   * Lifecycle hook called before any questions have been asked.
+   * Opportunity to change template before execution.
+   * @param template The template to be executed
+   */
+  prequestions?: (template: Template<Answers>) => Template<Answers>;
+  /**
+   * Lifecycle hook called after all questions have been answered.
+   * Opportunity to change answers based on the values of other answers.
+   */
+  postquestions?: GeneratorFunction<Answers, Answers>;
+  /**
+   * Lifecycle hook called before any files have been generated.
+   */
+  prefiles?: GeneratorFunction<Answers, void>;
+  /**
+   * Lifecycle hook called before each file is generated.
+   */
+  prefile?: PreHook<Answers, void>;
+  /**
+   * Lifecycle hook called after each file is generated.
+   */
+  postfile?: PreHook<Answers, void>;
+  /**
+   * Lifecycle hook called after all files have been generated.
+   */
+  postfiles?: GeneratorFunction<Answers, void>;
+  /**
+   * Lifecycle hook called before any plugins have been executed.
+   */
+  preplugins?: GeneratorFunction<Answers, void>;
+  /**
+   * Lifecycle hook called before each plugin is executed.
+   */
+  preplugin?: PreHook<Answers, void>;
+  /**
+   * Lifecycle hook called after each plugin is executed.
+   */
+  postplugin?: PostPluginHook<Answers, any>;
+  /**
+   * Lifecycle hook called after all plugins have been executed.
+   */
+  postplugins?: GeneratorFunction<Answers, void>;
+}
+
+export interface TemplatePlugin<Answers, Type> {
+  name: string;
+  config: ConfigOption<Answers, Type>;
 }
 
 export interface Template<Answers> {
@@ -148,13 +109,13 @@ export interface Template<Answers> {
    */
   questions: Questions<Answers>;
   /**
-   * npm package configuration
-   */
-  package: ConfigOption<Answers, NpmPackageConfig<Answers>>;
-  /**
    * Files to generate
    */
-  files?: ConfigOption<Answers, FileConfig<Answers>[]>;
+  files?: ConfigOption<Answers, Array<FileConfig<Answers>>>;
+  /**
+   * Plugins
+   */
+  plugins?: Array<TemplatePlugin<Answers, any>>;
   /**
    * Lifecycle hooks
    */

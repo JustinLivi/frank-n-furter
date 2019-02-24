@@ -1,9 +1,7 @@
-import { createPromptModule } from 'inquirer';
-
 import { Template } from '../interfaces/template';
+import { executePlugins } from '../lib/executePlugins';
 import { generateFiles } from '../lib/generateFiles';
-
-const prompt = createPromptModule();
+import { promptQuestions } from '../lib/promptQuestions';
 
 /**
  * Non-interactive, accepts answers and generates package
@@ -11,14 +9,12 @@ const prompt = createPromptModule();
  * @param answers All provided answers
  */
 export const generate = async <Answers>(
-  { files }: Template<Answers>,
+  template: Template<Answers>,
   answers: Answers
 ) => {
   try {
-    // generate files
-    if (files) {
-      await generateFiles(files, answers);
-    }
+    await generateFiles(template, answers);
+    await executePlugins(template, answers);
   } catch (error) {
     throw error;
   }
@@ -32,7 +28,7 @@ export const generateInteractive = async <Answers>(
   template: Template<Answers>
 ) => {
   try {
-    const answers = await prompt<Answers>(template.questions);
+    const answers = await promptQuestions(template);
     return await generate(template, answers);
   } catch (error) {
     throw error;
