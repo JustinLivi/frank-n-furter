@@ -4,31 +4,35 @@ import { Template, TemplatePlugin } from '../interfaces/template';
 import { evaluateOption } from './evaluateOption';
 
 /**
- * Executes a file based on the configuration and answers
- * @param template The overall template
- * @param plugin A plugin configuration
+ * Returns a function which executes a plugin
+ * based on the configuration and answers
  * @param answers All provided answers
+ * @param template The overall template
  */
-export const executePlugin = async <Answers, PluginType>(
-  template: Template<Answers>,
-  { name, config }: TemplatePlugin<Answers, PluginType>,
-  answers: Answers
-) => {
-  try {
-    const { hooks = {} } = template;
-    const { preplugin, postplugin } = hooks;
-    const evaluate = evaluateOption(answers, template);
-    if (preplugin) {
-      await preplugin(name, answers, template);
+export const executePlugin = <Answers>(
+  answers: Answers,
+  template: Template<Answers>
+) =>
+  /**
+   * Executes a plugin based on the configuration and answers
+   * @param plugin A plugin configuration
+   */
+  async <PluginType>({ name, config }: TemplatePlugin<Answers, PluginType>) => {
+    try {
+      const { hooks = {} } = template;
+      const { preplugin, postplugin } = hooks;
+      const evaluate = evaluateOption(answers, template);
+      if (preplugin) {
+        await preplugin(name, answers, template);
+      }
+      const contentsValue = await evaluate(config);
+      if (postplugin) {
+        await postplugin(name, contentsValue, answers, template);
+      }
+    } catch (error) {
+      throw error;
     }
-    const contentsValue = await evaluate(config);
-    if (postplugin) {
-      await postplugin(name, contentsValue, answers, template);
-    }
-  } catch (error) {
-    throw error;
-  }
-};
+  };
 
 /**
  * Executes plugins based on the configuration and answers
@@ -36,8 +40,8 @@ export const executePlugin = async <Answers, PluginType>(
  * @param answers All provided answers
  */
 export const executePlugins = async <Answers>(
-  template: Template<Answers>,
-  answers: Answers
+  answers: Answers,
+  template: Template<Answers>
 ) => {
   try {
     const { hooks = {}, plugins } = template;
@@ -48,9 +52,8 @@ export const executePlugins = async <Answers>(
     if (preplugins) {
       await preplugins(answers, template);
     }
-    await Promise.all(
-      map(plugins, file => executePlugin(template, file, answers))
-    );
+    const execute = executePlugin(answers, template);
+    await Promise.all(map(plugins, execute));
     if (postplugins) {
       await postplugins(answers, template);
     }

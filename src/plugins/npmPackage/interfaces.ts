@@ -56,7 +56,20 @@ export type NpmObjectConfig<Answers> = ConfigOption<
   NpmRepositoryObjectConfig<Answers> | StringConfig<Answers>
 >;
 
+export interface NpmDependencyObjectConfig<Answers> {
+  packages: StringArrayConfig<Answers>;
+  install?: ConfigOption<Answers, boolean>;
+  noOptional?: ConfigOption<Answers, boolean>;
+  ignoreScripts?: ConfigOption<Answers, boolean>;
+}
+
+export type NpmDependencyConfig<Answers> = ConfigOption<
+  Answers,
+  NpmDependencyObjectConfig<Answers>
+>;
+
 export interface NpmPackageObjectConfig<Answers> {
+  cwd?: StringConfig<Answers>;
   name?: StringConfig<Answers>;
   version?: StringConfig<Answers>;
   description?: StringConfig<Answers>;
@@ -81,13 +94,13 @@ export interface NpmPackageObjectConfig<Answers> {
   /**
    * npm dependencies to install
    */
-  dependencies?: StringArrayConfig<Answers>;
+  dependencies?: NpmDependencyConfig<Answers>;
   /**
    * npm devDependencies to install
    */
-  devDependencies?: StringArrayConfig<Answers>;
+  devDependencies?: NpmDependencyConfig<Answers>;
+  bundledDependencies?: NpmDependencyConfig<Answers>;
   peerdependencies?: StringArrayConfig<Answers>;
-  bundledDependencies?: StringArrayConfig<Answers>;
   optionalDependencies?: StringArrayConfig<Answers>;
   engines?: MapConfig<Answers>;
   os?: StringArrayConfig<Answers>;
@@ -97,7 +110,7 @@ export interface NpmPackageObjectConfig<Answers> {
 }
 
 /**
- * npm package configuration
+ * npm package plugin configuration
  */
 export type NpmPackageConfig<Answers> = ConfigOption<
   Answers,

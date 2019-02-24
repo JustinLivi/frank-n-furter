@@ -9,7 +9,7 @@ interface Extractor<Target> {
   value: <Default extends Target | undefined>(
     defaultValue?: Default
   ) => Target | Default;
-  map: <Res>(mapper: (target: Target) => Res) => Extractor<Res | undefined>;
+  map: <Res>(mapper: (target: Target) => Res) => Extractor<Res>;
 }
 
 export const ofExtractor = <Target>(target?: Target): Extractor<Target> => ({

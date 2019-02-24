@@ -1,10 +1,18 @@
+import { outputJSON } from 'fs-extra';
 import { isNil, mapValues, pick, pickBy } from 'lodash';
+import { resolve } from 'path';
 
 import { GeneratorFunction, StringArrayConfig, StringConfig, Template, TemplatePlugin } from '../../interfaces/template';
 import { evaluateOption, evaluateOptionArray } from '../../lib/evaluateOption';
-import { awaitMap, stringLiteralArray } from '../../lib/utils';
+import { awaitMap, ofExtractor, stringLiteralArray } from '../../lib/utils';
 import { NpmPackageConfig, NpmPackageObjectConfig } from './interfaces';
 
+/**
+ * Extracts simple string values
+ * @param config
+ * @param answers
+ * @param template
+ */
 const extractSimpleValues = async <Answers>(
   config: NpmPackageObjectConfig<Answers>,
   answers: Answers,
@@ -29,6 +37,12 @@ const extractSimpleValues = async <Answers>(
   return awaitMap(promiseMap);
 };
 
+/**
+ * Extracts simple string array values
+ * @param config
+ * @param answers
+ * @param template
+ */
 const extractSimpleArrayValues = async <Answers>(
   config: NpmPackageObjectConfig<Answers>,
   answers: Answers,
@@ -39,7 +53,6 @@ const extractSimpleArrayValues = async <Answers>(
     'keywords',
     'files',
     'peerdependencies',
-    'bundledDependencies',
     'optionalDependencies',
     'os',
     'cpu'
@@ -65,10 +78,16 @@ const evaluatePlugin = <Answers>(
     extractSimpleValues(configValue, answers, template),
     extractSimpleArrayValues(configValue, answers, template)
   ]);
-  return {
+  const cwd = await ofExtractor(configValue)
+    .sub('cwd')
+    .map(evaluate)
+    .value(Promise.resolve('/'));
+  const packageContents = {
     ...simpleValues,
     ...simpleArrayValues
   };
+  await outputJSON(resolve(cwd, './package.json'), packageContents);
+  return packageContents;
 };
 
 export const npmPackage = <Answers>(

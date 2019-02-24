@@ -13,8 +13,8 @@ export const generate = async <Answers>(
   answers: Answers
 ) => {
   try {
-    await generateFiles(template, answers);
-    await executePlugins(template, answers);
+    await generateFiles(answers, template);
+    await executePlugins(answers, template);
   } catch (error) {
     throw error;
   }
