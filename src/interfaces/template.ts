@@ -11,7 +11,7 @@ export type PreHook<Answers, Result> = (
   template: Template<Answers>
 ) => Result | Promise<Result>;
 
-export type PostPluginHook<Answers, Result> = (
+export type PostPluginHook<Answers> = <Result>(
   itemName: string,
   pluginOutput: Result,
   answers: Answers,
@@ -91,7 +91,7 @@ export interface LifecycleHooksConfig<Answers> {
   /**
    * Lifecycle hook called after each plugin is executed.
    */
-  postplugin?: PostPluginHook<Answers, any>;
+  postplugin?: PostPluginHook<Answers>;
   /**
    * Lifecycle hook called after all plugins have been executed.
    */

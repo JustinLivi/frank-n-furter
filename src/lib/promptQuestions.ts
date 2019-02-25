@@ -14,14 +14,14 @@ export const promptQuestions = async <Answers>(template: Template<Answers>) => {
     const { hooks = {} } = template;
     const { prequestions } = hooks;
     // prequestions hook
-    const processedTemplate = await execNullable(prequestions, template)(
-      template
-    );
+    const execPrequestions = execNullable(prequestions, template);
+    const processedTemplate = await execPrequestions(template);
     const { questions, hooks: processedHooks = {} } = processedTemplate;
     const { postquestions } = processedHooks;
     const answers = await prompt<Answers>(questions);
     // postquestions hook
-    return execNullable(postquestions, answers)(answers, template);
+    const execPostquestions = execNullable(postquestions, answers);
+    return execPostquestions(answers, template);
   } catch (error) {
     throw error;
   }

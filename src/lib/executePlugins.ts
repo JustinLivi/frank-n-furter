@@ -24,10 +24,12 @@ export const executePlugin = <Answers>(
       const { preplugin, postplugin } = hooks;
       const evaluate = evaluateOption(answers, template);
       // preplugin hook
-      await execNullable(preplugin)(name, answers, template);
+      const execPreplugin = execNullable(preplugin);
+      await execPreplugin(name, answers, template);
       const contentsValue = await evaluate(config);
       // postplugin hook
-      await execNullable(postplugin)(name, contentsValue, answers, template);
+      const execPostplugin = execNullable(postplugin);
+      await execPostplugin(name, contentsValue, answers, template);
     } catch (error) {
       throw error;
     }
@@ -49,11 +51,13 @@ export const executePlugins = async <Answers>(
     }
     const { preplugins, postplugins } = hooks;
     // preplugins hook
-    await execNullable(preplugins)(answers, template);
+    const execPreplugins = execNullable(preplugins);
+    await execPreplugins(answers, template);
     const execute = executePlugin(answers, template);
     await Promise.all(map(plugins, execute));
     // postplugins hook
-    await execNullable(postplugins)(answers, template);
+    const execPostplugins = execNullable(postplugins);
+    await execPostplugins(answers, template);
   } catch (error) {
     throw error;
   }
