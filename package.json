@@ -4,7 +4,8 @@
   "description": "🔥 npm init on steroids 🔥",
   "main": "build/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --watch",
+    "cover": "jest --coverage"
   },
   "repository": {
     "type": "git",

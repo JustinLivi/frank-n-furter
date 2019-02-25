@@ -3,6 +3,7 @@ import { map } from 'lodash';
 
 import { FileConfig, Template } from '../interfaces/template';
 import { evaluateOption } from './evaluateOption';
+import { execNullable } from './utils';
 
 /**
  * Returns a function which generates a file
@@ -24,14 +25,12 @@ export const generateFile = <Answers>(
       const { prefile, postfile } = hooks;
       const evaluate = evaluateOption(answers, template);
       const pathValue = await evaluate(path);
-      if (prefile) {
-        await prefile(pathValue, answers, template);
-      }
+      // prefile hook
+      await execNullable(prefile)(pathValue, answers, template);
       const contentsValue = await evaluate(contents);
       await outputFile(pathValue, contentsValue);
-      if (postfile) {
-        await postfile(pathValue, answers, template);
-      }
+      // postfile hook
+      await execNullable(postfile)(pathValue, answers, template);
     } catch (error) {
       throw error;
     }
@@ -52,16 +51,14 @@ export const generateFiles = async <Answers>(
       return;
     }
     const { prefiles, postfiles } = hooks;
-    if (prefiles) {
-      await prefiles(answers, template);
-    }
+    // prefiles hook
+    await execNullable(prefiles)(answers, template);
     const evaluate = evaluateOption(answers, template);
     const filesValue = await evaluate(files);
     const generate = generateFile(answers, template);
     await Promise.all(map(filesValue, generate));
-    if (postfiles) {
-      await postfiles(answers, template);
-    }
+    // postfiles hook
+    await execNullable(postfiles)(answers, template);
   } catch (error) {
     throw error;
   }

@@ -1,6 +1,7 @@
 import { createPromptModule } from 'inquirer';
 
 import { Template } from '../interfaces/template';
+import { execNullable } from './utils';
 
 const prompt = createPromptModule();
 
@@ -10,15 +11,17 @@ const prompt = createPromptModule();
  */
 export const promptQuestions = async <Answers>(template: Template<Answers>) => {
   try {
-    const { hooks } = template;
-    const prequestions = hooks && hooks.prequestions;
-    const processedTemplate = prequestions
-      ? await prequestions(template)
-      : template;
-    const { questions, hooks: processedHooks } = processedTemplate;
+    const { hooks = {} } = template;
+    const { prequestions } = hooks;
+    // prequestions hook
+    const processedTemplate = await execNullable(prequestions, template)(
+      template
+    );
+    const { questions, hooks: processedHooks = {} } = processedTemplate;
+    const { postquestions } = processedHooks;
     const answers = await prompt<Answers>(questions);
-    const postquestions = processedHooks && processedHooks.postquestions;
-    return postquestions ? await postquestions(answers, template) : answers;
+    // postquestions hook
+    return execNullable(postquestions, answers)(answers, template);
   } catch (error) {
     throw error;
   }

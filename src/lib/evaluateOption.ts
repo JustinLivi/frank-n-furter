@@ -2,10 +2,6 @@ import { map } from 'lodash';
 
 import { ArrayConfig, ConfigOption, GeneratorFunction, Template } from '../interfaces/template';
 
-export type OptionMapper<Answers, Result> =
-  | ((option: ConfigOption<Answers, Result>) => Promise<Result>)
-  | ((option: ArrayConfig<Answers, Result>) => Promise<Result[]>);
-
 /**
  * Returns a function which can be used to evaluate standard config options
  * @param answers All provided answers

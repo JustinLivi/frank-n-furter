@@ -2,6 +2,7 @@ import { map } from 'lodash';
 
 import { Template, TemplatePlugin } from '../interfaces/template';
 import { evaluateOption } from './evaluateOption';
+import { execNullable } from './utils';
 
 /**
  * Returns a function which executes a plugin
@@ -22,13 +23,11 @@ export const executePlugin = <Answers>(
       const { hooks = {} } = template;
       const { preplugin, postplugin } = hooks;
       const evaluate = evaluateOption(answers, template);
-      if (preplugin) {
-        await preplugin(name, answers, template);
-      }
+      // preplugin hook
+      await execNullable(preplugin)(name, answers, template);
       const contentsValue = await evaluate(config);
-      if (postplugin) {
-        await postplugin(name, contentsValue, answers, template);
-      }
+      // postplugin hook
+      await execNullable(postplugin)(name, contentsValue, answers, template);
     } catch (error) {
       throw error;
     }
@@ -49,14 +48,12 @@ export const executePlugins = async <Answers>(
       return;
     }
     const { preplugins, postplugins } = hooks;
-    if (preplugins) {
-      await preplugins(answers, template);
-    }
+    // preplugins hook
+    await execNullable(preplugins)(answers, template);
     const execute = executePlugin(answers, template);
     await Promise.all(map(plugins, execute));
-    if (postplugins) {
-      await postplugins(answers, template);
-    }
+    // postplugins hook
+    await execNullable(postplugins)(answers, template);
   } catch (error) {
     throw error;
   }
