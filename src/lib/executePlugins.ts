@@ -45,10 +45,7 @@ export const executePlugins = async <Answers>(
   template: Template<Answers>
 ) => {
   try {
-    const { hooks = {}, plugins } = template;
-    if (!plugins) {
-      return;
-    }
+    const { hooks = {}, plugins = [] } = template;
     const { preplugins, postplugins } = hooks;
     // preplugins hook
     const execPreplugins = execNullable(preplugins);

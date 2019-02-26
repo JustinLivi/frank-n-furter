@@ -26,11 +26,13 @@ export const generateFile = <Answers>(
       const evaluate = evaluateOption(answers, template);
       const pathValue = await evaluate(path);
       // prefile hook
-      await execNullable(prefile)(pathValue, answers, template);
+      const execPrefile = execNullable(prefile);
+      await execPrefile(pathValue, answers, template);
       const contentsValue = await evaluate(contents);
       await outputFile(pathValue, contentsValue);
       // postfile hook
-      await execNullable(postfile)(pathValue, answers, template);
+      const execPostfile = execNullable(postfile);
+      await execPostfile(pathValue, answers, template);
     } catch (error) {
       throw error;
     }
@@ -46,10 +48,7 @@ export const generateFiles = async <Answers>(
   template: Template<Answers>
 ) => {
   try {
-    const { hooks = {}, files } = template;
-    if (!files) {
-      return;
-    }
+    const { hooks = {}, files = [] } = template;
     const { prefiles, postfiles } = hooks;
     // prefiles hook
     await execNullable(prefiles)(answers, template);

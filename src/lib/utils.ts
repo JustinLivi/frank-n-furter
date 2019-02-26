@@ -1,4 +1,5 @@
 import { Dictionary, fromPairs, isNil, map, toPairs } from 'lodash';
+import { ArgsN } from 'tsargs';
 
 // TODO: consider moving these to own packages
 
@@ -19,18 +20,40 @@ export const ofExtractor = <Target>(target?: Target): Extractor<Target> => ({
   map: mapper => (isNil(target) ? ofExtractor() : ofExtractor(mapper(target)))
 });
 
-type ArgsType<T, R> = T extends (...args: infer U) => R ? U : never;
+export type NullableFunc = ((...args: any[]) => any) | undefined;
+export type ReturnOfNullable<Target extends NullableFunc> =
+  | ReturnType<Exclude<Target, undefined>>
+  | undefined;
+export type ArgsOfNullable<Target extends NullableFunc> = ArgsN<
+  Exclude<Target, undefined>
+>;
+export type DefaultReturnOfNullable<
+  Target extends NullableFunc,
+  Default extends ReturnOfNullable<Target>
+> = ReturnType<Exclude<Target, undefined>> | Default;
 
 export const execNullable = <
-  Target extends (...args: any[]) => any,
-  Args extends ArgsType<Target, ReturnValue>,
-  ReturnValue extends ReturnType<Target>,
-  Default extends ReturnValue | undefined
+  Target extends NullableFunc,
+  Default extends ReturnOfNullable<Target>
 >(
-  target: Target | undefined,
+  target: Target,
   defaultValue?: Default
-) => (...args: Args): ReturnValue | Default =>
+) => (
+  ...args: ArgsOfNullable<Target>
+): DefaultReturnOfNullable<Target, Default> =>
   typeof target === 'function' ? target(...args) : defaultValue;
+
+export const execConditional = <
+  Target extends NullableFunc,
+  Default extends ReturnOfNullable<Target>
+>(
+  condition: boolean,
+  target: Target,
+  defaultValue?: Default
+) => (
+  ...args: ArgsOfNullable<Target>
+): DefaultReturnOfNullable<Target, Default> =>
+  condition && typeof target === 'function' ? target(...args) : defaultValue;
 
 export const stringLiteralArray = <T extends string>(a: T[]) => a;
 

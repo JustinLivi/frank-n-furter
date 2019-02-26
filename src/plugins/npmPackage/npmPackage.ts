@@ -91,8 +91,9 @@ const evaluatePlugin = <Answers>(
 };
 
 export const npmPackage = <Answers>(
-  config: NpmPackageConfig<Answers>
+  config: NpmPackageConfig<Answers>,
+  name: string = 'npm-package'
 ): TemplatePlugin<Answers, NpmPackageConfig<Answers>> => ({
-  name: 'npm-package',
+  name,
   config: evaluatePlugin(config)
 });
