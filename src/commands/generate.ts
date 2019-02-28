@@ -6,13 +6,6 @@ import { generateFiles } from '../lib/generateFiles';
 import { promptQuestions } from '../lib/promptQuestions';
 import { execConditional } from '../lib/utils';
 
-// tslint:disable-next-line:ban-types
-const test = <T extends Function>(t: T) => t;
-
-const func: <T>(t: T) => T = param => param;
-
-const val = test(func);
-
 /**
  * Non-interactive, accepts answers and generates package
  * @param template The loaded template
