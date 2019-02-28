@@ -20,6 +20,6 @@
       "jest-extended": ["jest-extended"]
     }
   },
-  "include": ["./src/**/*", "./@types"],
+  "include": ["./src/**/*", "./@types", "global.d.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }
