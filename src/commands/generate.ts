@@ -19,8 +19,8 @@ const val = test(func);
  * @param answers All provided answers
  */
 export const generate = async <Answers>(
-  template: Template<Answers>,
-  answers: Answers
+  answers: Answers,
+  template: Template<Answers>
 ) => {
   try {
     const { files, plugins } = template;
@@ -42,7 +42,7 @@ export const generateInteractive = async <Answers>(
 ) => {
   try {
     const answers = await promptQuestions(template);
-    return await generate(template, answers);
+    return await generate(answers, template);
   } catch (error) {
     throw error;
   }
