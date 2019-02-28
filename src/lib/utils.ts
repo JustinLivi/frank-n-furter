@@ -1,4 +1,5 @@
 import { Dictionary, fromPairs, isNil, map, toPairs } from 'lodash';
+import tmp from 'tmp';
 import { ArgsN } from 'tsargs';
 
 // TODO: consider moving these to own packages
@@ -67,3 +68,30 @@ export const awaitMap = async <T>(
   const pairs = await Promise.all(map(toPairs(dictionary), fromPromiseTuple));
   return fromPairs(pairs);
 };
+
+export interface TempDir {
+  tmpdir: string;
+  cleanup: () => void;
+}
+
+// patterned after create-react-app
+// https://github.com/facebook/create-react-app/blob/master/packages/create-react-app/createReactApp.js#L512
+export const getTempDir = (): Promise<TempDir> =>
+  new Promise((resolve, reject) => {
+    tmp.dir({ unsafeCleanup: true }, (err, tmpdir, cleanup) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({
+          tmpdir,
+          cleanup: () => {
+            try {
+              cleanup();
+            } catch (err) {
+              // do nothing, theoretically we should be ok
+            }
+          }
+        });
+      }
+    });
+  });
