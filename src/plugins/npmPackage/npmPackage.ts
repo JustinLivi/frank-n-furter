@@ -2,7 +2,13 @@ import { outputJSON } from 'fs-extra';
 import { isNil, mapValues, pick, pickBy } from 'lodash';
 import { resolve } from 'path';
 
-import { GeneratorFunction, StringArrayConfig, StringConfig, Template, TemplatePlugin } from '../../interfaces/template';
+import {
+  GeneratorFunction,
+  StringArrayConfig,
+  StringConfig,
+  Template,
+  TemplatePluginConfig,
+} from '../../interfaces/template';
 import { evaluateOption, evaluateOptionArray } from '../../lib/evaluateOption';
 import { awaitMap, ofExtractor, stringLiteralArray } from '../../lib/utils';
 import { NpmPackageConfig, NpmPackageObjectConfig } from './interfaces';
@@ -62,6 +68,10 @@ const extractSimpleArrayValues = async <Answers>(
   return awaitMap(promiseMap);
 };
 
+/**
+ * Evaluate the core plugin logic
+ * @param config the full plugin configuration
+ */
 const evaluatePlugin = <Answers>(
   config: NpmPackageConfig<Answers>
 ): GeneratorFunction<Answers, NpmPackageConfig<Answers>> => async (
@@ -86,10 +96,15 @@ const evaluatePlugin = <Answers>(
   return packageContents;
 };
 
+/**
+ * Accepts a top-level config and return a plugin configuration
+ * @param config the full plugin configuration
+ * @param name optionally specify a plugin name. Default is 'npm-package'
+ */
 export const npmPackage = <Answers>(
   config: NpmPackageConfig<Answers>,
   name: string = 'npm-package'
-): TemplatePlugin<Answers, NpmPackageConfig<Answers>> => ({
+): TemplatePluginConfig<Answers, NpmPackageConfig<Answers>> => ({
   name,
   config: evaluatePlugin(config)
 });

@@ -1,6 +1,6 @@
 import { map } from 'lodash';
 
-import { Template, TemplatePlugin } from '../interfaces/template';
+import { Template, TemplatePluginConfig } from '../interfaces/template';
 import { evaluateOption } from './evaluateOption';
 import { execNullable } from './utils';
 
@@ -18,7 +18,10 @@ export const executePlugin = <Answers>(
    * Executes a plugin based on the configuration and answers
    * @param plugin A plugin configuration
    */
-  async <PluginType>({ name, config }: TemplatePlugin<Answers, PluginType>) => {
+  async <PluginType>({
+    name,
+    config
+  }: TemplatePluginConfig<Answers, PluginType>) => {
     try {
       const { hooks = {} } = template;
       const { preplugin, postplugin } = hooks;

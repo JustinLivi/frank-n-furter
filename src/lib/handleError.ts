@@ -1,6 +1,6 @@
 import { isNil, map } from 'lodash';
 
-import { Template, TemplatePlugin } from '../interfaces/template';
+import { Template, TemplatePluginConfig } from '../interfaces/template';
 import { execConditional, execNullable } from './utils';
 
 /**
@@ -21,7 +21,7 @@ export const handleErrorPlugin = <Answers>(
    */
   async <PluginType>({
     handleError: handleErrorConfig
-  }: TemplatePlugin<Answers, PluginType>) => {
+  }: TemplatePluginConfig<Answers, PluginType>) => {
     try {
       const execHandleErrorConfig = execNullable(handleErrorConfig);
       await execHandleErrorConfig(error, answers, template);

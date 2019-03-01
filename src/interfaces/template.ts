@@ -98,17 +98,22 @@ export interface LifecycleHooksConfig<Answers> {
   postplugins?: GeneratorFunction<Answers, void>;
 }
 
-export type HandleError<Answers> = (
+export type ErrorHandler<Answers> = (
   error: Error,
   answers: Answers,
   template: Template<Answers>
 ) => void | Promise<void>;
 
-export interface TemplatePlugin<Answers, Type> {
+export interface TemplatePluginConfig<Answers, Type> {
   name: string;
   config: ConfigOption<Answers, Type>;
-  handleError?: HandleError<Answers>;
+  handleError?: ErrorHandler<Answers>;
 }
+
+export type TemplatePlugin<Type> = <Answers>(
+  config: Type,
+  name: string
+) => TemplatePluginConfig<Answers, Type>;
 
 export interface Template<Answers> {
   /**
@@ -118,7 +123,7 @@ export interface Template<Answers> {
   /**
    * Hook to handle any errors
    */
-  handleError?: HandleError<Answers>;
+  handleError?: ErrorHandler<Answers>;
   /**
    * Files to generate
    */
@@ -126,7 +131,7 @@ export interface Template<Answers> {
   /**
    * Plugins
    */
-  plugins?: Array<TemplatePlugin<Answers, any>>;
+  plugins?: Array<TemplatePluginConfig<Answers, any>>;
   /**
    * Lifecycle hooks
    */
