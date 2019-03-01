@@ -7,6 +7,8 @@ import { evaluateOption, evaluateOptionArray } from '../../lib/evaluateOption';
 import { awaitMap, ofExtractor, stringLiteralArray } from '../../lib/utils';
 import { NpmPackageConfig, NpmPackageObjectConfig } from './interfaces';
 
+const notNil = <Value>(value: Value) => !isNil(value);
+
 /**
  * Extracts simple string values
  * @param config
@@ -29,10 +31,7 @@ const extractSimpleValues = async <Answers>(
     'browser'
   ]);
   const simpleDict = pick(config, simpleValues);
-  const filteredDict = pickBy<StringConfig<Answers>>(
-    simpleDict,
-    value => !isNil(value)
-  );
+  const filteredDict = pickBy<StringConfig<Answers>>(simpleDict, notNil);
   const promiseMap = mapValues(filteredDict, evaluate);
   return awaitMap(promiseMap);
 };
@@ -58,10 +57,7 @@ const extractSimpleArrayValues = async <Answers>(
     'cpu'
   ]);
   const simpleDict = pick(config, simpleArrayValues);
-  const filteredDict = pickBy<StringArrayConfig<Answers>>(
-    simpleDict,
-    value => !isNil(value)
-  );
+  const filteredDict = pickBy<StringArrayConfig<Answers>>(simpleDict, notNil);
   const promiseMap = mapValues(filteredDict, evaluate);
   return awaitMap(promiseMap);
 };
@@ -74,14 +70,14 @@ const evaluatePlugin = <Answers>(
 ) => {
   const evaluate = evaluateOption(answers, template);
   const configValue = await evaluate(config);
-  const [simpleValues, simpleArrayValues] = await Promise.all([
-    extractSimpleValues(configValue, answers, template),
-    extractSimpleArrayValues(configValue, answers, template)
-  ]);
   const cwd = await ofExtractor(configValue)
     .sub('cwd')
     .map(evaluate)
     .value(Promise.resolve('/'));
+  const [simpleValues, simpleArrayValues] = await Promise.all([
+    extractSimpleValues(configValue, answers, template),
+    extractSimpleArrayValues(configValue, answers, template)
+  ]);
   const packageContents = {
     ...simpleValues,
     ...simpleArrayValues

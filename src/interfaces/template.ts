@@ -98,9 +98,16 @@ export interface LifecycleHooksConfig<Answers> {
   postplugins?: GeneratorFunction<Answers, void>;
 }
 
+export type HandleError<Answers> = (
+  error: Error,
+  answers: Answers,
+  template: Template<Answers>
+) => void | Promise<void>;
+
 export interface TemplatePlugin<Answers, Type> {
   name: string;
   config: ConfigOption<Answers, Type>;
+  handleError?: HandleError<Answers>;
 }
 
 export interface Template<Answers> {
@@ -108,6 +115,10 @@ export interface Template<Answers> {
    * [inquirer](https://www.npmjs.com/package/inquirer) questions
    */
   questions: Questions<Answers>;
+  /**
+   * Hook to handle any errors
+   */
+  handleError?: HandleError<Answers>;
   /**
    * Files to generate
    */

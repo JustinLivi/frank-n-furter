@@ -3,6 +3,7 @@ import { isNil } from 'lodash';
 import { Template } from '../interfaces/template';
 import { executePlugins } from '../lib/executePlugins';
 import { generateFiles } from '../lib/generateFiles';
+import { handleError } from '../lib/handleError';
 import { promptQuestions } from '../lib/promptQuestions';
 import { execConditional } from '../lib/utils';
 
@@ -22,6 +23,7 @@ export const generate = async <Answers>(
     const execExecutePlugins = execConditional(!isNil(plugins), executePlugins);
     await execExecutePlugins(answers, template);
   } catch (error) {
+    await handleError(error, answers, template);
     throw error;
   }
 };
