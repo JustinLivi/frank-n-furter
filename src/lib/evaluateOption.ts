@@ -1,6 +1,8 @@
 import { map, mapValues } from 'lodash';
+import { isArray } from 'util';
 
-import { ArrayConfig, ConfigOption, GeneratorFunction, Template, TreeConfig } from '../interfaces/template';
+import { ArrayConfig, ConfigOption, ConfigOptionUnion, GeneratorFunction, Template } from '../interfaces/template';
+import { awaitMap } from './utils';
 
 /**
  * Returns a function which can be used to evaluate standard config options
@@ -70,22 +72,22 @@ export const evaluateOptionTree = <Answers>(
    * Evaluate an option based on the enclosed answers
    * @param option The option to evaluate
    */
-  async <Result extends object>(option: TreeConfig<Answers, Result>) => {
+  async <Result>(
+    option: ConfigOptionUnion<Answers, Result>
+  ): Promise<Result> => {
     try {
       const value = await (typeof option === 'function'
         ? (option as GeneratorFunction<Answers, Result>)(answers, template)
         : option);
-      const typeofValue = typeof value;
-      (() => {
-        switch (typeofValue) {
-          case 'object':
-            return mapValues(value, evaluateOptionTree(answers, template));
-          case 'number':
-          case 'string':
-          case 'boolean':
-            return evaluateOption(answers, template)(value);
-        }
-      })();
+      const evaluateTree = evaluateOptionTree(answers, template);
+      if (isArray(value)) {
+        return (Promise.all(map(value, evaluateTree)) as unknown) as Promise<
+          Result
+        >;
+      }
+      return (await (typeof value === 'object'
+        ? awaitMap(mapValues(value as any, evaluateTree))
+        : value)) as Promise<Result>;
     } catch (error) {
       throw error;
     }

@@ -24,20 +24,19 @@ export type ConfigOption<Answers, Result> =
   | Result
   | GeneratorFunction<Answers, Result>;
 
-export type ArrayConfig<Answers, Type> =
-  | ConfigOption<Answers, Type[]>
-  | Array<ConfigOption<Answers, Type>>;
+export type ArrayConfig<Answers, Result> =
+  | ConfigOption<Answers, Result[]>
+  | Array<ConfigOption<Answers, Result>>;
 export type StringConfig<Answers> = ConfigOption<Answers, string>;
 export type StringArrayConfig<Answers> = ArrayConfig<Answers, string>;
 
-export type TreeItemConfig<Answers, MapType, Key extends keyof MapType> = Map<
-  Key,
-  ConfigOption<Answers, MapType[Key]>
->;
+export interface TreeItemConfig<Answers, MapType, Key extends keyof MapType>
+  extends Map<Key, ConfigOptionUnion<Answers, MapType[Key]>> {}
 
-export type TreeConfig<Answers, TreeType extends object> =
-  | ConfigOption<Answers, TreeType>
-  | TreeItemConfig<Answers, TreeType, keyof TreeType>;
+export type ConfigOptionUnion<Answers, Result> =
+  | GeneratorFunction<Answers, Result>
+  | TreeItemConfig<Answers, Result, keyof Result>
+  | Result;
 
 export interface MapItemConfig<Answers> {
   key: StringConfig<Answers>;
