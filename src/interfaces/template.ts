@@ -1,5 +1,7 @@
 import { Questions } from 'inquirer';
 
+export type SimpleTypes = number | string | boolean | symbol;
+
 export type GeneratorFunction<Answers, Result> = (
   answers: Answers,
   template: Template<Answers>
@@ -27,6 +29,15 @@ export type ArrayConfig<Answers, Type> =
   | Array<ConfigOption<Answers, Type>>;
 export type StringConfig<Answers> = ConfigOption<Answers, string>;
 export type StringArrayConfig<Answers> = ArrayConfig<Answers, string>;
+
+export type TreeItemConfig<Answers, MapType, Key extends keyof MapType> = Map<
+  Key,
+  ConfigOption<Answers, MapType[Key]>
+>;
+
+export type TreeConfig<Answers, TreeType extends object> =
+  | ConfigOption<Answers, TreeType>
+  | TreeItemConfig<Answers, TreeType, keyof TreeType>;
 
 export interface MapItemConfig<Answers> {
   key: StringConfig<Answers>;
