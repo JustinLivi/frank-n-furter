@@ -1,118 +1,88 @@
-import { ArrayConfig, ConfigOption, MapConfig, StringArrayConfig, StringConfig } from '../../interfaces/template';
+import { ConfigOptionUnion } from '../../interfaces/template';
 
-export interface NpmBugsObjectConfig<Answers> {
-  url?: StringConfig<Answers>;
-  email?: StringConfig<Answers>;
+export interface NpmBugsConfig {
+  url?: string;
+  email?: string;
 }
 
-export type NpmBugsConfig<Answers> = ConfigOption<
-  Answers,
-  NpmBugsObjectConfig<Answers> | StringConfig<Answers>
->;
-
-export interface NpmPersonObjectConfig<Answers> {
-  name: StringConfig<Answers>;
-  email?: StringConfig<Answers>;
-  url?: StringConfig<Answers>;
+export interface NpmPersonConfig {
+  name: string;
+  email?: string;
+  url?: string;
 }
 
-export type NpmPersonConfig<Answers> = ConfigOption<
-  Answers,
-  NpmPersonObjectConfig<Answers> | StringConfig<Answers>
->;
+export type NpmContributorsConfig = NpmPersonConfig[];
+export type NpmManConfig = string[];
 
-export type NpmContributorsConfig<Answers> = ArrayConfig<
-  Answers,
-  NpmPersonConfig<Answers>
->;
-
-export type NpmManConfig<Answers> = ConfigOption<
-  Answers,
-  StringArrayConfig<Answers> | StringConfig<Answers>
->;
-
-export interface NpmDirectoriesObjectConfig<Answers> {
-  lib?: StringConfig<Answers>;
-  bin?: StringConfig<Answers>;
-  man?: StringConfig<Answers>;
-  doc?: StringConfig<Answers>;
-  example?: StringConfig<Answers>;
-  test?: StringConfig<Answers>;
+export interface NpmDirectoriesConfig {
+  lib?: string;
+  bin?: string;
+  man?: string;
+  doc?: string;
+  example?: string;
+  test?: string;
 }
 
-export type NpmDirectoriesConfig<Answers> = ConfigOption<
-  Answers,
-  NpmDirectoriesObjectConfig<Answers>
->;
-
-export interface NpmRepositoryObjectConfig<Answers> {
-  type: StringConfig<Answers>;
-  url: StringConfig<Answers>;
-  directory?: StringConfig<Answers>;
+export interface NpmRepositoryObjectConfig {
+  type: string;
+  url: string;
+  directory?: string;
 }
 
-export type NpmObjectConfig<Answers> = ConfigOption<
-  Answers,
-  NpmRepositoryObjectConfig<Answers> | StringConfig<Answers>
->;
+export type NpmObjectConfig = NpmRepositoryObjectConfig | string;
 
-export interface NpmDependencyObjectConfig<Answers> {
-  packages: StringArrayConfig<Answers>;
-  install?: ConfigOption<Answers, boolean>;
-  noOptional?: ConfigOption<Answers, boolean>;
-  ignoreScripts?: ConfigOption<Answers, boolean>;
+export interface NpmDependencyConfig {
+  packages: string[];
+  install?: boolean;
+  noOptional?: boolean;
+  ignoreScripts?: boolean;
 }
 
-export type NpmDependencyConfig<Answers> = ConfigOption<
-  Answers,
-  NpmDependencyObjectConfig<Answers>
->;
-
-export interface NpmPackageObjectConfig<Answers> {
-  cwd?: StringConfig<Answers>;
-  name?: StringConfig<Answers>;
-  version?: StringConfig<Answers>;
-  description?: StringConfig<Answers>;
-  keywords?: StringArrayConfig<Answers>;
-  homepage?: StringConfig<Answers>;
-  bugs?: NpmBugsConfig<Answers>;
-  license?: StringConfig<Answers>;
-  author?: NpmPersonConfig<Answers>;
-  contributors?: NpmContributorsConfig<Answers>;
-  files?: StringArrayConfig<Answers>;
-  main?: StringConfig<Answers>;
-  browser?: StringConfig<Answers>;
-  bin?: MapConfig<Answers>;
-  man?: NpmManConfig<Answers>;
-  directories?: NpmDirectoriesConfig<Answers>;
-  repository?: NpmRepositoryObjectConfig<Answers>;
-  config?: MapConfig<Answers>;
+export interface NpmPackageObjectConfig {
+  cwd?: string;
+  name?: string;
+  version?: string;
+  description?: string;
+  keywords?: string[];
+  homepage?: string;
+  bugs?: NpmBugsConfig;
+  license?: string;
+  author?: NpmPersonConfig;
+  contributors?: NpmContributorsConfig;
+  files?: string[];
+  main?: string;
+  browser?: string;
+  bin?: Map<string, string>;
+  man?: NpmManConfig;
+  directories?: NpmDirectoriesConfig;
+  repository?: NpmRepositoryObjectConfig;
+  config?: Map<string, string>;
   /**
    * npm scripts to add
    */
-  scripts?: MapConfig<Answers>;
+  scripts?: Map<string, string>;
   /**
    * npm dependencies to install
    */
-  dependencies?: NpmDependencyConfig<Answers>;
+  dependencies?: NpmDependencyConfig;
   /**
    * npm devDependencies to install
    */
-  devDependencies?: NpmDependencyConfig<Answers>;
-  bundledDependencies?: NpmDependencyConfig<Answers>;
-  peerdependencies?: StringArrayConfig<Answers>;
-  optionalDependencies?: StringArrayConfig<Answers>;
-  engines?: MapConfig<Answers>;
-  os?: StringArrayConfig<Answers>;
-  cpu?: StringArrayConfig<Answers>;
-  private?: ConfigOption<Answers, boolean>;
-  publishConfig?: MapConfig<Answers>;
+  devDependencies?: NpmDependencyConfig;
+  bundledDependencies?: NpmDependencyConfig;
+  peerdependencies?: string[];
+  optionalDependencies?: string[];
+  engines?: Map<string, string>;
+  os?: string[];
+  cpu?: string[];
+  private?: boolean;
+  publishConfig?: Map<string, string>;
 }
 
 /**
  * npm package plugin configuration
  */
-export type NpmPackageConfig<Answers> = ConfigOption<
+export type NpmPackageConfig<Answers> = ConfigOptionUnion<
   Answers,
-  NpmPackageObjectConfig<Answers>
+  NpmPackageObjectConfig
 >;
