@@ -1,7 +1,7 @@
-import { isNil, map } from 'lodash';
+import { map } from 'lodash';
 
 import { Template, TemplatePluginConfig } from '../interfaces/template';
-import { execConditional, execNullable } from './utils';
+import { execNullable } from './utils';
 
 /**
  * Returns a function which executes a plugin error handler
@@ -36,7 +36,7 @@ export const handleErrorPlugin = <Answers>(
  * @param template The overall template
  * @param answers All provided answers
  */
-export const handleErrorPlugins = async <Answers>(
+export const handleError = async <Answers>(
   error: Error,
   answers: Answers,
   template: Template<Answers>
@@ -45,31 +45,6 @@ export const handleErrorPlugins = async <Answers>(
     const { plugins = [] } = template;
     const execHandleErrorPlugin = handleErrorPlugin(error, answers, template);
     await Promise.all(map(plugins, execHandleErrorPlugin));
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Handles an error
- * @param error The error to handle
- * @param template The overall template
- * @param answers All provided answers
- */
-export const handleError = async <Answers>(
-  error: Error,
-  answers: Answers,
-  template: Template<Answers>
-) => {
-  try {
-    const { handleError: handleErrorConfig, plugins } = template;
-    const execHandleError = execNullable(handleErrorConfig);
-    await execHandleError(error, answers, template);
-    const execHandleErrorPlugins = execConditional(
-      !isNil(plugins),
-      handleErrorPlugins
-    );
-    await execHandleErrorPlugins(error, answers, template);
   } catch (error) {
     throw error;
   }

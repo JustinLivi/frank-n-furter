@@ -78,7 +78,7 @@ describe('evaluateOption', () => {
           () => Promise.resolve('value2')
         ]),
         prop3: Promise.resolve({
-          nested: Promise.resolve('value3')
+          nested: () => Promise.resolve('value3')
         })
       })
     ).toEqual({
